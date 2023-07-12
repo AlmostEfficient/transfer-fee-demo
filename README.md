@@ -123,3 +123,8 @@ All transfer fees are withheld in users' token accounts and only the authority c
 
 Can be safely ignored. If you want to get rid of it, run `pnpm install bigint-buffer`.
 
+`Error: failed to send transaction: Transaction simulation failed: Error processing Instruction 0: custom program error: 0x1`
+Something is wrong with your transaction setup. Check what you changed and make sure you're using the right keypairs. The error message should give you a hint.
+
+429 - Too many requests
+You can only request airdrops twice a day per IP address. You'll have to source some devnet SOL from another faucet, like the [Lamport DAO](https://discord.com/invite/deHy9bqsrP) faucet.
