@@ -1,5 +1,5 @@
 # transfer-fee-demo
-Create a token that has a transfer fee on every transfer using Javascript! Uses the transfer fee extension on the Token-22 program.
+Create a token that has a transfer fee on every transfer using Javascript! Uses the transfer fee extension on the Token-22 program. Look at all the headings in this readme, there's helpful stuff in here.
 
 ## Setup - Node.js, pnpm, git
 Make sure you have the latest version of [Node.js](https://nodejs.org/en/download/) installed. Clone or download this repository and navigate to the directory in your terminal. I recommend using pnpm to install dependencies, get it [here](https://pnpm.js.org/en/installation). Then run `pnpm install` to install dependencies.
@@ -17,6 +17,42 @@ When running this for real, you'll want to swap out a bunch of `keypair.generate
 - `mintKeypair`: the mint account (tokens come from here)
 - `transferFeeConfigAuthority`: the account that can modify the transfer fee
 - `withdrawWithheldAuthority`: the account that can move tokens withheld on the mint or token accounts
+
+### Loading keypairs from a file
+The scripts in this repo are set up to run on the devnet. They save all generated keypairs to a `.env` file when run.  Load your own keypairs like this:
+```
+import { Keypair } from '@solana/web3.js';
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Replace PAYER with the name/label of keypair you want to load
+const payerSecretKey = JSON.parse(process.env.PAYER);
+const payer = Keypair.fromSecretKey(Uint8Array.from(payerSecretKey));
+
+if (!payer) { throw new Error('PAYER not found') }
+console.log('Payer address:', payer.publicKey.toBase58());
+``` 
+
+Note: dotenv not required on Node 20.6+.
+
+If you're using a JSON array of numbers, you can use `getKeypairFromFile` from the [node-helpers](https://www.npmjs.com/package/@solana-developers/node-helpers).
+
+To load the default keypair ~/.config/solana/id.json, just run:
+```
+const keyPair = await getKeypairFromFile();
+```
+
+or to load a specific file:
+```
+const keyPair = await getKeypairFromFile("somefile.json");
+```
+
+### Loading keypairs from the environment
+You can also use `getKeyPairFromEnvironment` from the [node-helpers](https://www.npmjs.com/package/@solana-developers/node-helpers) package to load keypairs from the environment.
+
+```
+const keyPair = await getKeypairFromEnvironment("SECRET_KEY");
+```
 
 ## Pseudo-code for each step
 There's a lot going on and it can be overwhelming. I've written out some pseudo-code for each section to help you understand what's going on.
