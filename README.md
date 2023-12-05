@@ -23,48 +23,48 @@ There's a lot going on and it can be overwhelming. I've written out some pseudo-
 
 Notes - single payer for entire script.
 
-1. Setup 
-imports
-connect to devnet
-generate payer keypair (this account will pay for all txns)
-airdrop SOL to payer
+1. Setup  
+imports  
+connect to devnet  
+generate payer keypair (this account will pay for all txns)  
+airdrop SOL to payer  
 
-2. create necessary keypairs
-generate mint authority - can mint new tokens
-generate mint keypair - the mint account (tokens come from here)
-generate transfer fee config authority - can modify the transfer fee
-generate withdraw withheld tokens authority - can move tokens withheld on mint or token accounts
+2. create necessary keypairs  
+generate mint authority - can mint new tokens  
+generate mint keypair - the mint account (tokens come from here)  
+generate transfer fee config authority - can modify the transfer fee  
+generate withdraw withheld tokens authority - can move tokens withheld on mint or token accounts  
 
-3. Configure token & mint account
-set token decimals
-set token feeBasisPoints (fee percentage)
-set maximum fee to collect on transfers
-get mint length - how much space to allocate to the mint account
-get mintLamports - how much lamports we need for this amount of space
+3. Configure token & mint account  
+set token decimals  
+set token feeBasisPoints (fee percentage)  
+set maximum fee to collect on transfers  
+get mint length - how much space to allocate to the mint account  
+get mintLamports - how much lamports we need for this amount of space  
 
-4. Create token mint 
-Create instructions for a new account with createAccountInstruction
-Initialize the transfer fee extension
-Initialize the new account as a token mint
-Create tx with these 3 instructions, send
+4. Create token mint   
+Create instructions for a new account with createAccountInstruction  
+Initialize the transfer fee extension  
+Initialize the new account as a token mint  
+Create tx with these 3 instructions, send  
 
-5. Transferring tokens
-Generate "owner" keypair
-Create new token account for "owner"
-Mint tokens to the new token account (owner)
-Generate "recipient" keypair
-Create new token account for recipient
-Calculate transfer fee
-Transfer tokens from owner to recipient using transferCheckedWithFee
+5. Transferring tokens  
+Generate "owner" keypair  
+Create new token account for "owner"  
+Mint tokens to the new token account (owner)  
+Generate "recipient" keypair  
+Create new token account for recipient  
+Calculate transfer fee  
+Transfer tokens from owner to recipient using transferCheckedWithFee  
 
-6. Find and withdraw withheld tokens from accounts
-Iterate over all token accounts for the mint and find which accounts have tokens withheld
-getProgramAccounts to find all Token22 accounts for the mint
-Loop over all accounts, use getTransferFeeAmount to see if there are any tokens withheld
-Withdraw tokens from relevant accounts using withdrawWithheldTokens
+6. Find and withdraw withheld tokens from accounts  
+Iterate over all token accounts for the mint and find which accounts have tokens withheld  
+getProgramAccounts to find all Token22 accounts for the mint  
+Loop over all accounts, use getTransferFeeAmount to see if there are any tokens withheld  
+Withdraw tokens from relevant accounts using withdrawWithheldTokens  
 
-7. Harvest withheld tokens to mint
-Necessary to close an account, transfers the withheld tokens from user account to mint account
+7. Harvest withheld tokens to mint  
+Necessary to close an account, transfers the withheld tokens from user account to mint account  
 
 8. Withdraw withheld tokens
-Lets you remove tokens from the mint account and send them to any account so you burn/spend/trade them. 
+Lets you remove tokens from the mint account and send them to any account so you burn/spend/trade them.   
