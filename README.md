@@ -1,8 +1,20 @@
 # transfer-fee-demo
-Create a token that has a transfer fee on every transfer using Javascript! Uses the transfer fee extension on the Token-22 program. Look at all the headings in this readme, there's helpful stuff in here.
+Create a token that has a transfer fee on every transfer using Javascript! Uses the transfer fee extension on the Token-22 program. **Look at all the headings in this readme, they will answer your questions.**
 
-## Setup - Node.js, pnpm, git
-Make sure you have the latest version of [Node.js](https://nodejs.org/en/download/) installed. Clone or download this repository and navigate to the directory in your terminal. I recommend using pnpm to install dependencies, get it [here](https://pnpm.js.org/en/installation). Then run `pnpm install` to install dependencies.
+## Setup requirements - Node.js, pnpm, git
+- Latest version of [Node.js](https://nodejs.org/en/download/) installed. 
+- `pnpm` for installing dependencies, get it [here](https://pnpm.js.org/en/installation).
+- Clone or download this repository and navigate to the directory in your terminal. 
+- Run `pnpm install` to install dependencies.
+
+## Usage
+Run scripts using `node <script-name>`.
+
+- `create-token.js`: Creates a new token with the transfer fee extension. You can configure `decimals`, `feeBasisPoints` (fee percentage), and `maxFee` (maximum fee to collect on transfers).
+- `mint-and-transfer.js`: Mints 10 tokens and transfers them to a generated account. You can configure which account to send the tokens to.
+- `withdraw-tokens.js`: Withdraws tax from holders' token accounts to the recipient address saved in the mint and transfer script. You can configure which account to send the tokens to.
+
+Run each script in order, starting with `create-token.js`. 
 
 ## I don't understand _______ 
 You're gonna be fine! We'll be doing this on the devnet, which is a test network that doesn't use real money. You don't need to understand how *everything* works, just try to figure out what you're doing at a high level. (i.e. wtf is a keypair?)
@@ -10,24 +22,25 @@ You're gonna be fine! We'll be doing this on the devnet, which is a test network
 If you don't know a term or a specific step, just google it. I highly recommend [ChatGPT](https://chat.openai.com/) for learning about new concepts. 
 
 ## Mainnet changes
-When running this for real, you'll want to swap out a bunch of `keypair.generate()` calls with keypairs you control. Here's what you might want to replace in main.js:
+When running this for real, you'll want to swap out a bunch of `keypair.generate()` calls with keypairs you control. Here's what you might want to replace:
 
-- `payer`: the account that pays for all transactions, replace with funded keypair
+- `payer`: the account that pays for all transactions
 - `mintAuthority`: the account that can mint new tokens
 - `mintKeypair`: the mint account (tokens come from here)
 - `transferFeeConfigAuthority`: the account that can modify the transfer fee
 - `withdrawWithheldAuthority`: the account that can move tokens withheld on the mint or token accounts
 
 ### Loading keypairs from a file
-The scripts in this repo are set up to run on the devnet. They save all generated keypairs to a `.env` file when run.  Load your own keypairs like this:
+The scripts in this repo are set up to run on the devnet. They save all generated keypairs to a `.env` file when run. Replace them with your own keypairs and load them like this:
 ```
 import { Keypair } from '@solana/web3.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
 // Replace PAYER with the name/label of keypair you want to load
-const payerSecretKey = JSON.parse(process.env.PAYER);
-const payer = Keypair.fromSecretKey(Uint8Array.from(payerSecretKey));
+const payer = Keypair.fromSecretKey(
+  new Uint8Array(JSON.parse(process.env.PAYER))
+);
 
 if (!payer) { throw new Error('PAYER not found') }
 console.log('Payer address:', payer.publicKey.toBase58());
@@ -35,72 +48,78 @@ console.log('Payer address:', payer.publicKey.toBase58());
 
 Note: dotenv not required on Node 20.6+.
 
-If you're using a JSON array of numbers, you can use `getKeypairFromFile` from the [node-helpers](https://www.npmjs.com/package/@solana-developers/node-helpers).
-
-To load the default keypair ~/.config/solana/id.json, just run:
-```
-const keyPair = await getKeypairFromFile();
-```
-
-or to load a specific file:
-```
-const keyPair = await getKeypairFromFile("somefile.json");
-```
-
-### Loading keypairs from the environment
-You can also use `getKeyPairFromEnvironment` from the [node-helpers](https://www.npmjs.com/package/@solana-developers/node-helpers) package to load keypairs from the environment.
-
-```
-const keyPair = await getKeypairFromEnvironment("SECRET_KEY");
-```
+### Loading keypairs from the environment or JSON file
+If you want to load keypairs from the system environment or a JSON file (like `~/.config/solana/id.json`), check out the [node-helpers](https://www.npmjs.com/package/@solana-developers/node-helpers) package.
 
 ## Pseudo-code for each step
 There's a lot going on and it can be overwhelming. I've written out some pseudo-code for each section to help you understand what's going on.
 
-Notes - single payer for entire script.
+Notes - single payer used for all scripts.
 
-1. Setup  
+### `create-token.js`
+1. **Setup**  
 imports  
 connect to devnet  
 generate payer keypair (this account will pay for all txns)  
 airdrop SOL to payer  
 
-2. create necessary keypairs  
+2. **create necessary keypairs**  
 generate mint authority - can mint new tokens  
 generate mint keypair - the mint account (tokens come from here)  
 generate transfer fee config authority - can modify the transfer fee  
 generate withdraw withheld tokens authority - can move tokens withheld on mint or token accounts  
 
-3. Configure token & mint account  
+3. **Configure token & mint account**  
 set token decimals  
 set token feeBasisPoints (fee percentage)  
 set maximum fee to collect on transfers  
 get mint length - how much space to allocate to the mint account  
-get mintLamports - how much lamports we need for this amount of space  
+get mintLamports - how many lamports we need for the amount of space taken up (used for rent)  
 
-4. Create token mint   
+4. **Create token mint**   
 Create instructions for a new account with createAccountInstruction  
 Initialize the transfer fee extension  
 Initialize the new account as a token mint  
 Create tx with these 3 instructions, send  
 
-5. Transferring tokens  
+### `mint-and-transfer.js`
+1. **Setup**  
+imports  
+connect to devnet  
+load keypairs from .env file  
+Check balance of payer  
+
+2. **Create necessary accounts**  
 Generate "owner" keypair  
 Create new token account for "owner"  
 Mint tokens to the new token account (owner)  
 Generate "recipient" keypair  
 Create new token account for recipient  
+
+3. **Transferring tokens**  
 Calculate transfer fee  
 Transfer tokens from owner to recipient using transferCheckedWithFee  
 
-6. Find and withdraw withheld tokens from accounts  
+### `withdraw-tokens.js`
+1. **Setup**  
+imports  
+connect to devnet  
+load keypairs from .env file  
+
+2. **Find and withdraw withheld tokens from token accounts**  
 Iterate over all token accounts for the mint and find which accounts have tokens withheld  
 getProgramAccounts to find all Token22 accounts for the mint  
 Loop over all accounts, use getTransferFeeAmount to see if there are any tokens withheld  
 Withdraw tokens from relevant accounts using withdrawWithheldTokens  
 
-7. Harvest withheld tokens to mint  
-Necessary to close an account, transfers the withheld tokens from user account to mint account  
+3. **Withdraw withheld tokens from mint account**  
+Lets you remove tokens from the mint account and send them to any account so you burn/spend/trade them. **Uncomment if you want to use it**.
 
-8. Withdraw withheld tokens
-Lets you remove tokens from the mint account and send them to any account so you burn/spend/trade them.   
+**Withheld tokens in mint account vs token accounts:**  
+All transfer fees are withheld in users' token accounts and only the authority can withdraw them. Optionally, users can purge their token accounts of withheld tokens by withdrawing them to the mint account. This is why you can withdraw from both mint account AND token accounts. 
+
+## Troubleshooting
+`bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)`
+
+Can be safely ignored. If you want to get rid of it, run `pnpm install bigint-buffer`.
+
