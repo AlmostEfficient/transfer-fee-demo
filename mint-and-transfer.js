@@ -9,6 +9,10 @@ import { addKeypairToEnvFile } from '@solana-developers/node-helpers';
 import dotenv from 'dotenv';
 dotenv.config();
 
+if (!process.env.PAYER || !process.env.MINT_AUTHORITY || !process.env.MINT_KEYPAIR) {
+  throw new Error('Necessary keypairs not found, have you run the create-token script?');
+}
+
 const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
 
 const payer = Keypair.fromSecretKey(
@@ -24,10 +28,9 @@ const mint = Keypair.fromSecretKey(
 ).publicKey;
 
 const balance = await connection.getBalance(payer.publicKey);
-if (balance < 10000000) {
-  // 0.01 SOL
+if (balance < 10000000) { // 0.01 SOL
   throw new Error(
-    'Not enough SOL in payer account, please fund',
+    'Not enough SOL in payer account, please fund: ',
     payer.publicKey.toBase58()
   );
 }
